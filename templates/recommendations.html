@@ -1,0 +1,830 @@
+{% extends "base.html" %}
+
+{% block title %}AI Recommendations - Skardu AI Tourism Explorer{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-center mb-4">
+                <i class="fas fa-robot text-primary"></i>
+                AI-Powered Recommendations
+            </h1>
+            <p class="lead text-center mb-5">Get personalized hotel and itinerary recommendations based on your preferences</p>
+        </div>
+    </div>
+
+    <!-- Recommendation Tabs -->
+    <div class="row">
+        <div class="col-12">
+            <ul class="nav nav-pills mb-4 justify-content-center" id="recommendationTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="hotels-tab" data-bs-toggle="pill" data-bs-target="#hotels" type="button">
+                        <i class="fas fa-hotel"></i> Hotel Recommendations
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="itinerary-tab" data-bs-toggle="pill" data-bs-target="#itinerary" type="button">
+                        <i class="fas fa-route"></i> Travel Itinerary
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="expenses-tab" data-bs-toggle="pill" data-bs-target="#expenses" type="button">
+                        <i class="fas fa-calculator"></i> Expense Estimation
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="map-tab" data-bs-toggle="pill" data-bs-target="#map" type="button">
+                        <i class="fas fa-map"></i> Interactive Map
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="recommendationTabsContent">
+                <!-- Hotel Recommendations Tab -->
+                <div class="tab-pane fade show active" id="hotels" role="tabpanel">
+                    <div class="row">
+                        <!-- Preferences Sidebar -->
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h4><i class="fas fa-sliders-h"></i> Your Preferences</h4>
+                                </div>
+                                <div class="card-body">
+                                    <form id="hotelPreferencesForm">
+                                        <!-- Budget Level -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Budget Level</label>
+                                            <select class="form-select" id="budgetLevel" name="budget">
+                                                <option value="low">Budget (1,000-3,000 PKR/night)</option>
+                                                <option value="medium" selected>Moderate (3,000-7,000 PKR/night)</option>
+                                                <option value="high">Luxury (7,000-20,000 PKR/night)</option>
+                                                <option value="any">Any Budget</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Group Size -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Group Size</label>
+                                            <input type="number" class="form-control" id="groupSize" name="group_size" value="2" min="1" max="20">
+                                        </div>
+
+                                        <!-- Stay Duration -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Stay Duration (days)</label>
+                                            <input type="number" class="form-control" id="stayDuration" name="duration" value="3" min="1" max="30">
+                                        </div>
+
+                                        <!-- Interests -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Your Interests</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="deosaiPlains" id="interestDeosai">
+                                                <label class="form-check-label" for="interestDeosai">Deosai Plains</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="kachuraLake" id="interestKachura">
+                                                <label class="form-check-label" for="interestKachura">Kachura Lake</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="shangrilaLake" id="interestShangrila">
+                                                <label class="form-check-label" for="interestShangrila">Shangrila Lake</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="manthokaWaterfall" id="interestWaterfall">
+                                                <label class="form-check-label" for="interestWaterfall">Manthoka Waterfall</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="kharpochoFort" id="interestFort">
+                                                <label class="form-check-label" for="interestFort">Kharpocho Fort</label>
+                                            </div>
+                                        </div>
+
+                                        <!-- Facilities -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Required Facilities</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="wifi" id="facilityWifi">
+                                                <label class="form-check-label" for="facilityWifi">WiFi Internet</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="guide" id="facilityGuide">
+                                                <label class="form-check-label" for="facilityGuide">Guide Services</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="transport" id="facilityTransport">
+                                                <label class="form-check-label" for="facilityTransport">Transport Arrangement</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="restaurant" id="facilityRestaurant">
+                                                <label class="form-check-label" for="facilityRestaurant">Restaurant/Dining</label>
+                                            </div>
+                                        </div>
+
+                                        <button type="button" class="btn btn-primary w-100" id="getRecommendationsBtn">
+                                            <i class="fas fa-magic"></i> Get AI Recommendations
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results Area -->
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h4><i class="fas fa-star"></i> Recommended Hotels</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div id="recommendationsResults">
+                                        <div class="text-center py-5">
+                                            <i class="fas fa-hotel fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted">Select your preferences and click "Get AI Recommendations" to see personalized hotel suggestions.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Itinerary Tab -->
+                <div class="tab-pane fade" id="itinerary" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h4><i class="fas fa-plane"></i> Trip Planner</h4>
+                                </div>
+                                <div class="card-body">
+                                    <form id="itineraryForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Trip Duration (days)</label>
+                                            <input type="number" class="form-control" id="tripDuration" value="5" min="1" max="30">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Budget Level</label>
+                                            <select class="form-select" id="itineraryBudget">
+                                                <option value="low">Budget</option>
+                                                <option value="medium" selected>Moderate</option>
+                                                <option value="high">Luxury</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Travel Pace</label>
+                                            <select class="form-select" id="travelPace">
+                                                <option value="relaxed">Relaxed</option>
+                                                <option value="moderate" selected>Moderate</option>
+                                                <option value="fast">Fast-paced</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Interests</label>
+                                            <select class="form-select" id="itineraryInterests" multiple>
+                                                <option value="lake">Lakes & Waterfalls</option>
+                                                <option value="mountain">Mountain Views</option>
+                                                <option value="historical">Historical Sites</option>
+                                                <option value="valley">Valleys & Nature</option>
+                                                <option value="adventure">Adventure Activities</option>
+                                            </select>
+                                            <small class="text-muted">Hold Ctrl to select multiple options</small>
+                                        </div>
+                                        <button type="button" class="btn btn-info w-100" id="generateItineraryBtn">
+                                            <i class="fas fa-route"></i> Generate Itinerary
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h4><i class="fas fa-calendar-alt"></i> Your Skardu Itinerary</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div id="itineraryResults">
+                                        <div class="text-center py-5">
+                                            <i class="fas fa-route fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted">Configure your trip details and generate a personalized itinerary.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expenses Tab -->
+                <div class="tab-pane fade" id="expenses" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header bg-warning text-white">
+                                    <h4><i class="fas fa-calculator"></i> Cost Calculator</h4>
+                                </div>
+                                <div class="card-body">
+                                    <form id="expenseForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Trip Duration (days)</label>
+                                            <input type="number" class="form-control" id="expenseDuration" value="5" min="1" max="30">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Group Size</label>
+                                            <input type="number" class="form-control" id="expenseGroupSize" value="2" min="1" max="20">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Budget Level</label>
+                                            <select class="form-select" id="expenseBudget">
+                                                <option value="low">Budget</option>
+                                                <option value="medium" selected>Moderate</option>
+                                                <option value="high">Luxury</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Planned Activities</label>
+                                            <select class="form-select" id="expenseActivities" multiple>
+                                                <option value="deosai_plains">Deosai Plains Visit</option>
+                                                <option value="kachura_lake">Kachura Lake</option>
+                                                <option value="shangrila_lake">Shangrila Resort</option>
+                                                <option value="manthoka_waterfall">Manthoka Waterfall</option>
+                                                <option value="kharpocho_fort">Kharpocho Fort</option>
+                                                <option value="basho_valley">Basho Valley</option>
+                                                <option value="shigar_valley">Shigar Valley</option>
+                                            </select>
+                                            <small class="text-muted">Hold Ctrl to select multiple activities</small>
+                                        </div>
+                                        <button type="button" class="btn btn-warning w-100" id="calculateExpensesBtn">
+                                            <i class="fas fa-calculator"></i> Calculate Expenses
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header bg-warning text-white">
+                                    <h4><i class="fas fa-money-bill-wave"></i> Expense Breakdown</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div id="expenseResults">
+                                        <div class="text-center py-5">
+                                            <i class="fas fa-calculator fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted">Enter your trip details to get a detailed cost estimate.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Tab -->
+                <div class="tab-pane fade" id="map" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h4><i class="fas fa-map-marked-alt"></i> Interactive Skardu Map</h4>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="p-3">
+                                        <h5>Map Filters</h5>
+                                        <div class="mb-3">
+                                            <label class="form-label">Hotel Type</label>
+                                            <select class="form-select" id="mapHotelType">
+                                                <option value="all">All Types</option>
+                                                <option value="hotel">Hotels Only</option>
+                                                <option value="guesthouse">Guest Houses Only</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Budget Range</label>
+                                            <select class="form-select" id="mapBudget">
+                                                <option value="all">All Budgets</option>
+                                                <option value="low">Budget</option>
+                                                <option value="medium">Moderate</option>
+                                                <option value="high">Luxury</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Facilities</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="mapWifi" checked>
+                                                <label class="form-check-label" for="mapWifi">WiFi Available</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="mapRestaurant" checked>
+                                                <label class="form-check-label" for="mapRestaurant">Restaurant</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="mapTransport" checked>
+                                                <label class="form-check-label" for="mapTransport">Transport</label>
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-primary w-100" id="applyMapFilters">
+                                            <i class="fas fa-filter"></i> Apply Filters
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-9">
+                                    <div id="hotelMap" style="height: 600px; width: 100%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hotel Detail Modal -->
+<div class="modal fade" id="hotelDetailModal" tabindex="-1" aria-labelledby="hotelDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="hotelDetailModalLabel">Hotel Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="hotelDetailContent">
+                <!-- Hotel details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Initialize the map
+    initMap();
+
+    // Hotel Recommendations
+    $('#getRecommendationsBtn').click(function() {
+        getHotelRecommendations();
+    });
+
+    // Itinerary Generation
+    $('#generateItineraryBtn').click(function() {
+        generateItinerary();
+    });
+
+    // Expense Calculation
+    $('#calculateExpensesBtn').click(function() {
+        calculateExpenses();
+    });
+
+    // Map Filters
+    $('#applyMapFilters').click(function() {
+        updateMapFilters();
+    });
+});
+
+function getHotelRecommendations() {
+    const formData = {
+        budget: $('#budgetLevel').val(),
+        group_size: parseInt($('#groupSize').val()),
+        duration: parseInt($('#stayDuration').val()),
+        interests: getSelectedCheckboxes('interest'),
+        facilities: getSelectedCheckboxes('facility')
+    };
+
+    showLoading('recommendationsResults');
+
+    $.ajax({
+        url: '/api/recommend/hotels',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        success: function(response) {
+            if (response.success) {
+                displayHotelRecommendations(response.recommendations);
+            } else {
+                showError('recommendationsResults', response.error);
+            }
+        },
+        error: function() {
+            showError('recommendationsResults', 'Failed to get recommendations. Please try again.');
+        }
+    });
+}
+
+function generateItinerary() {
+    const formData = {
+        duration: parseInt($('#tripDuration').val()),
+        budget: $('#itineraryBudget').val(),
+        pace: $('#travelPace').val(),
+        interests: Array.from($('#itineraryInterests').val())
+    };
+
+    showLoading('itineraryResults');
+
+    $.ajax({
+        url: '/api/recommend/itinerary',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        success: function(response) {
+            if (response.success) {
+                displayItinerary(response.itinerary);
+            } else {
+                showError('itineraryResults', response.error);
+            }
+        },
+        error: function() {
+            showError('itineraryResults', 'Failed to generate itinerary. Please try again.');
+        }
+    });
+}
+
+function calculateExpenses() {
+    const formData = {
+        duration: parseInt($('#expenseDuration').val()),
+        group_size: parseInt($('#expenseGroupSize').val()),
+        budget: $('#expenseBudget').val(),
+        activities: Array.from($('#expenseActivities').val())
+    };
+
+    showLoading('expenseResults');
+
+    $.ajax({
+        url: '/api/recommend/expenses',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        success: function(response) {
+            if (response.success) {
+                displayExpenses(response.expense_estimate);
+            } else {
+                showError('expenseResults', response.error);
+            }
+        },
+        error: function() {
+            showError('expenseResults', 'Failed to calculate expenses. Please try again.');
+        }
+    });
+}
+
+function displayHotelRecommendations(recommendations) {
+    let html = '';
+    
+    if (recommendations.length === 0) {
+        html = '<div class="alert alert-warning">No hotels found matching your criteria. Try adjusting your preferences.</div>';
+    } else {
+        recommendations.forEach((rec, index) => {
+            const hotel = rec.hotel;
+            html += `
+            <div class="card mb-3 recommendation-card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="card-title">${hotel.hotelGuestHouseName}</h5>
+                            <p class="card-text text-muted">
+                                <i class="fas fa-map-marker-alt"></i> ${hotel.fullAddress}
+                            </p>
+                            <div class="mb-2">
+                                <span class="badge bg-${getBudgetBadgeColor(rec.budget_category)} me-2">${rec.budget_category.toUpperCase()}</span>
+                                <span class="badge bg-success">Match: ${(rec.score * 100).toFixed(1)}%</span>
+                            </div>
+                            <div class="facilities mb-2">
+                                ${generateFacilityIcons(hotel)}
+                            </div>
+                            <p class="card-text"><strong>Estimated Cost:</strong> PKR ${rec.cost_estimate.total.toLocaleString()} for ${$('#stayDuration').val()} days</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn btn-outline-primary btn-sm me-2" onclick="showHotelDetails(${index})">
+                                <i class="fas fa-info-circle"></i> Details
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="addToItinerary(${index})">
+                                <i class="fas fa-plus"></i> Add to Trip
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+        });
+    }
+    
+    $('#recommendationsResults').html(html);
+}
+
+function displayItinerary(itinerary) {
+    let html = `
+    <div class="itinerary-header mb-4">
+        <h4>${itinerary.duration_days}-Day Skardu Adventure</h4>
+        <p class="text-muted">Budget Level: <span class="badge bg-${getBudgetBadgeColor(itinerary.budget_level)}">${itinerary.budget_level.toUpperCase()}</span></p>
+        <p><strong>Total Estimated Cost:</strong> PKR ${itinerary.total_estimated_cost.toLocaleString()}</p>
+    </div>
+    `;
+
+    itinerary.daily_itinerary.forEach(day => {
+        html += `
+        <div class="card mb-3">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Day ${day.day} - ${day.pace} Pace</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        ${day.activities.map(activity => `
+                        <div class="activity-item mb-2">
+                            <strong>${activity.time}:</strong> ${activity.activity}
+                            <br><small class="text-muted">Duration: ${activity.duration} | Cost: PKR ${activity.cost}</small>
+                        </div>
+                        `).join('')}
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <p><strong>Day Total:</strong> PKR ${day.total_cost}</p>
+                        <p><strong>Hours:</strong> ${day.total_hours}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+    });
+
+    // Add hotel recommendations
+    html += `
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Recommended Accommodations</h5>
+        </div>
+        <div class="card-body">
+            ${itinerary.hotel_recommendations.map(hotel => `
+            <div class="hotel-recommendation mb-2">
+                <strong>${hotel.hotel.hotelGuestHouseName}</strong>
+                <br><small class="text-muted">${hotel.hotel.fullAddress}</small>
+                <br><small>Match Score: ${(hotel.score * 100).toFixed(1)}% | Budget: ${hotel.budget_category}</small>
+            </div>
+            `).join('')}
+        </div>
+    </div>
+    `;
+
+    $('#itineraryResults').html(html);
+}
+
+function displayExpenses(expenses) {
+    const breakdown = expenses.breakdown;
+    
+    let html = `
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h3>PKR ${expenses.total.toLocaleString()}</h3>
+                    <p class="text-muted">Total Estimated Cost</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h3>PKR ${expenses.per_person.toLocaleString()}</h3>
+                    <p class="text-muted">Per Person</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h5>Cost Breakdown</h5>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Amount (PKR)</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    const total = expenses.total;
+    Object.entries(breakdown).forEach(([category, amount]) => {
+        const percentage = ((amount / total) * 100).toFixed(1);
+        html += `
+        <tr>
+            <td>${category.charAt(0).toUpperCase() + category.slice(1)}</td>
+            <td>${amount.toLocaleString()}</td>
+            <td>${percentage}%</td>
+        </tr>
+        `;
+    });
+
+    html += `
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="alert alert-info mt-3">
+        <strong>Budget Level:</strong> ${expenses.budget_level.toUpperCase()}
+        <br><strong>Daily Average:</strong> PKR ${expenses.per_day.toLocaleString()} per day
+    </div>
+    `;
+
+    $('#expenseResults').html(html);
+}
+
+// Map Functions
+let map;
+let markers = [];
+
+function initMap() {
+    // Initialize the map centered on Skardu
+    map = L.map('hotelMap').setView([35.2975, 75.6337], 12);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Load hotel data and add markers
+    loadHotelsForMap();
+}
+
+function loadHotelsForMap() {
+    $.get('/api/hotels', function(response) {
+        if (response.success) {
+            addHotelsToMap(response.hotels);
+        }
+    });
+}
+
+function addHotelsToMap(hotels) {
+    // Clear existing markers
+    markers.forEach(marker => map.removeLayer(marker));
+    markers = [];
+
+    hotels.forEach(hotel => {
+        const lat = hotel.location.latitude;
+        const lng = hotel.location.longitude;
+        
+        if (lat && lng) {
+            const marker = L.marker([lat, lng]).addTo(map);
+            
+            // Create popup content
+            const popupContent = `
+            <div class="map-popup">
+                <h6>${hotel.hotelGuestHouseName}</h6>
+                <p class="mb-1"><small>${hotel.fullAddress}</small></p>
+                <p class="mb-1"><strong>Rooms:</strong> ${hotel.facilities.rooms.numberOfRooms || 'N/A'}</p>
+                <p class="mb-1"><strong>Facilities:</strong> ${getFacilitySummary(hotel)}</p>
+                <button class="btn btn-sm btn-primary mt-1" onclick="showHotelModal('${hotel.hotelGuestHouseName}')">
+                    View Details
+                </button>
+            </div>
+            `;
+            
+            marker.bindPopup(popupContent);
+            markers.push(marker);
+        }
+    });
+
+    // Fit map to show all markers
+    if (markers.length > 0) {
+        const group = new L.featureGroup(markers);
+        map.fitBounds(group.getBounds().pad(0.1));
+    }
+}
+
+function updateMapFilters() {
+    const hotelType = $('#mapHotelType').val();
+    const budget = $('#mapBudget').val();
+    const hasWifi = $('#mapWifi').is(':checked');
+    const hasRestaurant = $('#mapRestaurant').is(':checked');
+    const hasTransport = $('#mapTransport').is(':checked');
+
+    // Filter hotels based on selected criteria
+    $.get('/api/hotels', function(response) {
+        if (response.success) {
+            const filteredHotels = response.hotels.filter(hotel => {
+                // Hotel type filter
+                if (hotelType !== 'all') {
+                    if (hotelType === 'hotel' && !hotel.type.hotel) return false;
+                    if (hotelType === 'guesthouse' && !hotel.type.guestHouse) return false;
+                }
+
+                // Budget filter (simplified)
+                // You would need to implement actual budget categorization
+
+                // Facilities filter
+                if (hasWifi && !hotel.facilities.wifiInternet) return false;
+                if (hasRestaurant && !hotel.facilities.restaurantDining) return false;
+                if (hasTransport && !hotel.facilities.transportArrangement && !hotel.hasOwnTransport) return false;
+
+                return true;
+            });
+
+            addHotelsToMap(filteredHotels);
+        }
+    });
+}
+
+// Utility Functions
+function getSelectedCheckboxes(prefix) {
+    const checkboxes = [];
+    $(`input[type="checkbox"][id^="${prefix}"]:checked`).each(function() {
+        checkboxes.push($(this).val());
+    });
+    return checkboxes;
+}
+
+function showLoading(elementId) {
+    $('#' + elementId).html(`
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">AI is analyzing your preferences...</p>
+        </div>
+    `);
+}
+
+function showError(elementId, message) {
+    $('#' + elementId).html(`
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i> ${message}
+        </div>
+    `);
+}
+
+function getBudgetBadgeColor(budget) {
+    switch(budget) {
+        case 'low': return 'success';
+        case 'medium': return 'warning';
+        case 'high': return 'danger';
+        default: return 'secondary';
+    }
+}
+
+function generateFacilityIcons(hotel) {
+    let icons = '';
+    if (hotel.facilities.wifiInternet) icons += '<span class="badge bg-info me-1"><i class="fas fa-wifi"></i> WiFi</span>';
+    if (hotel.facilities.guideServices) icons += '<span class="badge bg-info me-1"><i class="fas fa-map"></i> Guide</span>';
+    if (hotel.facilities.transportArrangement || hotel.hasOwnTransport) icons += '<span class="badge bg-info me-1"><i class="fas fa-car"></i> Transport</span>';
+    if (hotel.facilities.restaurantDining) icons += '<span class="badge bg-info me-1"><i class="fas fa-utensils"></i> Restaurant</span>';
+    return icons;
+}
+
+function getFacilitySummary(hotel) {
+    const facilities = [];
+    if (hotel.facilities.wifiInternet) facilities.push('WiFi');
+    if (hotel.facilities.restaurantDining) facilities.push('Restaurant');
+    if (hotel.facilities.transportArrangement || hotel.hasOwnTransport) facilities.push('Transport');
+    return facilities.join(', ');
+}
+
+function showHotelDetails(index) {
+    // This would show detailed hotel information in the modal
+    $('#hotelDetailModalLabel').text('Hotel Details');
+    $('#hotelDetailContent').html(`
+        <div class="text-center py-4">
+            <i class="fas fa-hotel fa-3x text-muted"></i>
+            <p class="mt-2">Detailed hotel information would be displayed here.</p>
+        </div>
+    `);
+    $('#hotelDetailModal').modal('show');
+}
+
+function showHotelModal(hotelName) {
+    // Load and display hotel details in modal
+    $('#hotelDetailModalLabel').text(hotelName);
+    $('#hotelDetailContent').html(`
+        <div class="text-center py-4">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading hotel details...</p>
+        </div>
+    `);
+    $('#hotelDetailModal').modal('show');
+
+    // In a real implementation, you would fetch detailed hotel data here
+    setTimeout(() => {
+        $('#hotelDetailContent').html(`
+            <p><strong>Address:</strong> Sample address would appear here</p>
+            <p><strong>Rooms:</strong> Sample room information</p>
+            <p><strong>Facilities:</strong> WiFi, Restaurant, Transport</p>
+            <p><strong>Contact:</strong> Sample phone number</p>
+            <div class="mt-3">
+                <button class="btn btn-primary">Book Now</button>
+                <button class="btn btn-outline-secondary">Add to Favorites</button>
+            </div>
+        `);
+    }, 1000);
+}
+
+function addToItinerary(index) {
+    // Implementation for adding hotel to itinerary
+    alert('Hotel added to your itinerary!');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Skardu AI Tourism Explorer{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="hero-section bg-primary text-white rounded-3 p-5">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="display-4 fw-bold">Discover Skardu with AI</h1>
+                        <p class="lead">Intelligent recommendations, personalized itineraries, and comprehensive analytics for your Skardu adventure</p>
+                        <div class="mt-4">
+                            <a href="{{ url_for('recommendations') }}" class="btn btn-light btn-lg me-3">
+                                <i class="fas fa-hotel"></i> Find Hotels
+                            </a>
+                            <a href="{{ url_for('chatbot_interface') }}" class="btn btn-outline-light btn-lg">
+                                <i class="fas fa-robot"></i> Ask AI Assistant
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <i class="fas fa-mountain-sun display-1 opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-5">
+        <div class="col-md-3">
+            <div class="card stat-card bg-success text-white">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-8">
+                            <h3 id="total-hotels">0</h3>
+                            <p>Hotels & Guest Houses</p>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="fas fa-hotel fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-info text-white">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-8">
+                            <h3 id="total-tourists">0</h3>
+                            <p>Tourists Served</p>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-warning text-white">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-8">
+                            <h3 id="popular-places">0</h3>
+                            <p>Popular Attractions</p>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="fas fa-map-marker-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-danger text-white">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-8">
+                            <h3 id="ai-recommendations">0</h3>
+                            <p>AI Recommendations</p>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="fas fa-brain fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">AI-Powered Features</h2>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-hotel fa-3x text-primary mb-3"></i>
+                    <h4>Smart Hotel Recommendations</h4>
+                    <p>AI-powered hotel suggestions based on your budget, preferences, and travel style</p>
+                    <a href="{{ url_for('recommendations') }}" class="btn btn-primary">Explore Hotels</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-route fa-3x text-success mb-3"></i>
+                    <h4>Personalized Itineraries</h4>
+                    <p>Custom travel plans with optimized routes, timing, and activity suggestions</p>
+                    <a href="{{ url_for('recommendations') }}" class="btn btn-success">Plan Your Trip</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-robot fa-3x text-info mb-3"></i>
+                    <h4>AI Travel Assistant</h4>
+                    <p>24/7 chatbot support for all your travel questions and recommendations</p>
+                    <a href="{{ url_for('chatbot_interface') }}" class="btn btn-info">Chat Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Analytics Preview -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Tourist Demographics</h4>
+                </div>
+                <div class="card-body">
+                    <canvas id="demographicsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Popular Facilities</h4>
+                </div>
+                <div class="card-body">
+                    <canvas id="facilitiesChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Load dashboard data
+    $.get('/api/analytics/demographics', function(data) {
+        if (data.success) {
+            updateDashboardStats(data.data);
+            createCharts(data.data);
+        }
+    });
+
+    function updateDashboardStats(demographics) {
+        $('#total-hotels').text('50+');
+        $('#total-tourists').text((demographics.total_tourists / 1000).toFixed(0) + 'K+');
+        $('#popular-places').text('25+');
+        $('#ai-recommendations').text('1000+');
+    }
+
+    function createCharts(demographics) {
+        // Demographics Chart
+        const demoCtx = document.getElementById('demographicsChart').getContext('2d');
+        new Chart(demoCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pakistani Tourists', 'Foreign Tourists'],
+                datasets: [{
+                    data: [demographics.pakistani_tourists, demographics.foreign_tourists],
+                    backgroundColor: ['#007bff', '#28a745']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Facilities Chart
+        $.get('/api/analytics/facilities', function(facilitiesData) {
+            if (facilitiesData.success) {
+                const facilities = facilitiesData.data;
+                const facilityCtx = document.getElementById('facilitiesChart').getContext('2d');
+                
+                const labels = Object.keys(facilities).slice(0, 5);
+                const percentages = labels.map(label => facilities[label].percentage);
+                
+                new Chart(facilityCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Availability (%)',
+                            data: percentages,
+                            backgroundColor: '#ffc107'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

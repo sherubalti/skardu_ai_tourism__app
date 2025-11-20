@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Skardu AI Tourism Explorer{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-center mb-4">
+                <i class="fas fa-chart-bar text-primary"></i>
+                Tourism Analytics Dashboard
+            </h1>
+            <p class="lead text-center mb-5">Comprehensive insights into Skardu tourism trends and patterns</p>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-5">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white metric-card">
+                <div class="card-body text-center">
+                    <h2 id="totalTouristsMetric">0</h2>
+                    <p>Total Tourists</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white metric-card">
+                <div class="card-body text-center">
+                    <h2 id="totalHotelsMetric">0</h2>
+                    <p>Hotels & Guest Houses</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white metric-card">
+                <div class="card-body text-center">
+                    <h2 id="foreignTouristsMetric">0</h2>
+                    <p>Foreign Tourists</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white metric-card">
+                <div class="card-body text-center">
+                    <h2 id="avgStayMetric">0</h2>
+                    <p>Avg Stay (Days)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Tourist Demographics</h4>
+                </div>
+                <div class="card-body">
+                    <canvas id="demographicsChart" width="400" height="200" aria-label="Bar chart showing tourist demographics"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Tourist Origins</h4>
+                </div>
+                <div class="card-body">
+                    <canvas id="originsChart" width="400" height="200" aria-label="Doughnut chart displaying tourist origins"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Facilities Availability</h4>
+                </div>
+                <div class="card-body">
+                    <canvas id="facilitiesChart" width="400" height="200" aria-label="Bar chart showing facilities availability"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Popular Attractions</h4>
+                </div>
+                <div class="card-body">
+                    <canvas id="attractionsChart" width="400" height="200" aria-label="Polar area chart displaying popular attractions"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Analytics -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Detailed Market Analysis</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Market Gaps & Opportunities</h5>
+                            <div id="marketGapsList">
+                                <!-- Market gaps will be loaded here -->
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Growth Recommendations</h5>
+                            <div id="growthRecommendations">
+                                <!-- Growth recommendations will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Geographic Distribution -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Geographic Distribution of Accommodations</h4>
+                </div>
+                <div class="card-body">
+                    <div id="analyticsMap" style="height: 400px; width: 100%;" aria-label="Map showing accommodations distribution"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    loadAnalyticsData();
+    initAnalyticsMap();
+});
+
+function loadAnalyticsData() {
+    $.get('/api/analytics/demographics', function(data) {
+        if (data.success) {
+            updateMetrics(data.data);
+            createDemographicsChart(data.data);
+            createOriginsChart(data.data);
+        }
+    });
+    $.get('/api/analytics/facilities', function(data) {
+        if (data.success) {
+            createFacilitiesChart(data.data);
+        }
+    });
+    $.get('/api/analytics/popular-places', function(data) {
+        if (data.success) {
+            createAttractionsChart(data.data);
+        }
+    });
+    $.get('/api/business/insights', function(data) {
+        if (data.success) {
+            displayMarketAnalysis(data.data);
+        }
+    });
+}
+
+function updateMetrics(demographics) {
+    $('#totalTouristsMetric').text(demographics.total_tourists.toLocaleString());
+    $('#totalHotelsMetric').text('50+');
+    $('#foreignTouristsMetric').text(demographics.foreign_tourists.toLocaleString());
+    $('#avgStayMetric').text('4.2');
+}
+
+function createDemographicsChart(demographics) {
+    const ctx = document.getElementById('demographicsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Pakistani Tourists', 'Foreign Tourists', 'Local Tourists', 'Non-local Tourists'],
+            datasets: [{
+                label: 'Number of Tourists',
+                data: [
+                    demographics.pakistani_tourists,
+                    demographics.foreign_tourists,
+                    demographics.local_vs_nonlocal.local,
+                    demographics.local_vs_nonlocal.non_local
+                ],
+                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true, position: 'top' },
+                tooltip: { enabled: true }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Number of Tourists' }
+                },
+                x: {
+                    title: { display: true, text: 'Tourist Category' }
+                }
+            }
+        }
+    });
+}
+
+function createOriginsChart(demographics) {
+    const ctx = document.getElementById('originsChart').getContext('2d');
+    const topOrigins = Object.entries(demographics.breakdown_by_origin)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: topOrigins.map(item => item[0]),
+            datasets: [{
+                data: topOrigins.map(item => item[1]),
+                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6f42c1'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: { enabled: true }
+            }
+        }
+    });
+}
+
+function createFacilitiesChart(facilities) {
+    const ctx = document.getElementById('facilitiesChart').getContext('2d');
+    const facilityNames = Object.keys(facilities);
+    const facilityPercentages = facilityNames.map(name => facilities[name].percentage);
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: facilityNames.map(name => name.replace(/_/g, ' ').toUpperCase()),
+            datasets: [{
+                label: 'Availability (%)',
+                data: facilityPercentages,
+                backgroundColor: '#17a2b8',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true, position: 'top' },
+                tooltip: { enabled: true }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: { display: true, text: 'Availability (%)' }
+                },
+                x: {
+                    title: { display: true, text: 'Facility' }
+                }
+            }
+        }
+    });
+}
+
+function createAttractionsChart(attractions) {
+    const ctx = document.getElementById('attractionsChart').getContext('2d');
+    const topAttractions = Object.entries(attractions)
+        .sort((a,b) => b[1] - a[1])
+        .slice(0, 8);
+    new Chart(ctx, {
+        type: 'polarArea',
+        data: {
+            labels: topAttractions.map(item => item[0]),
+            datasets: [{
+                data: topAttractions.map(item => item[1]),
+                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6f42c1', '#e83e8c', '#fd7e14', '#20c997'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'right' },
+                tooltip: { enabled: true }
+            }
+        }
+    });
+}
+
+function displayMarketAnalysis(data) {
+    const gapsList = $('#marketGapsList');
+    if (data.market_gaps && data.market_gaps.length > 0) {
+        gapsList.html('<ul class="list-group"></ul>');
+        data.market_gaps.forEach(gap => {
+            gapsList.find('ul').append(`<li class="list-group-item">${gap}</li>`);
+        });
+    } else {
+        gapsList.html('<p class="text-muted">No significant market gaps identified.</p>');
+    }
+    const growthList = $('#growthRecommendations');
+    if (data.growth_opportunities && data.growth_opportunities.length > 0) {
+        growthList.html('<ul class="list-group"></ul>');
+        data.growth_opportunities.forEach(opp => {
+            growthList.find('ul').append(`<li class="list-group-item">${opp}</li>`);
+        });
+    } else {
+        growthList.html('<p class="text-muted">No specific growth opportunities identified.</p>');
+    }
+}
+
+let analyticsMap;
+
+function initAnalyticsMap() {
+    analyticsMap = L.map('analyticsMap').setView([35.2975, 75.6337], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(analyticsMap);
+    loadHotelsForAnalyticsMap();
+}
+
+function loadHotelsForAnalyticsMap() {
+    $.get('/api/hotels', function(response) {
+        if (response.success) {
+            addHotelsToAnalyticsMap(response.hotels);
+        }
+    });
+}
+
+function addHotelsToAnalyticsMap(hotels) {
+    const markers = L.markerClusterGroup();
+    hotels.forEach(hotel => {
+        const lat = hotel.location.latitude;
+        const lng = hotel.location.longitude;
+        if (lat && lng) {
+            const marker = L.marker([lat, lng]);
+            const popupContent = `
+                <div class="map-popup">
+                    <h6>${hotel.hotelGuestHouseName}</h6>
+                    <p><small>${hotel.fullAddress}</small></p>
+                    <p><strong>Tourists:</strong> ${hotel.touristDemographics.totalTouristsRecorded || 0}</p>
+                    <p><strong>Facilities:</strong> ${getFacilitySummary(hotel)}</p>
+                </div>
+            `;
+            marker.bindPopup(popupContent);
+            markers.addLayer(marker);
+        }
+    });
+    analyticsMap.addLayer(markers);
+}
+
+function getFacilitySummary(hotel) {
+    const facilities = [];
+    if(hotel.facilities.wifiInternet) facilities.push('WiFi');
+    if(hotel.facilities.restaurantDining) facilities.push('Restaurant');
+    if(hotel.facilities.transportArrangement || hotel.hasOwnTransport) facilities.push('Transport');
+    return facilities.join(', ');
+}
+</script>
+
+<style>
+.card {
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+}
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+}
+.metric-card {
+    transition: transform 0.2s;
+}
+.metric-card:hover {
+    transform: translateY(-5px);
+}
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid #e9ecef;
+    padding: 0.75rem 1.25rem;
+}
+.list-group-item:last-child {
+    border-bottom: none;
+}
+</style>
+{% endblock %}
