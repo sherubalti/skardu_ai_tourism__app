@@ -1,0 +1,1 @@
+# skardu_ai_tourism__app
