@@ -4,6 +4,7 @@ from datetime import timedelta
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'skardu-ai-tourism-secret-key-2024'
     SESSION_TYPE = 'filesystem'
+    DEBUG = True
     SESSION_PERMANENT = False
     PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
     
@@ -13,4 +14,5 @@ class Config:
     
     # Chatbot Configurations
     CHATBOT_MAX_HISTORY = 10
+
     CHATBOT_RESPONSE_TIMEOUT = 30
