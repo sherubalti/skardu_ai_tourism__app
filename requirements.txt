@@ -1,15 +1,15 @@
 Flask==2.3.3
 Flask-Session==0.4.0
+gunicorn==21.2.0
+
+# Core scientific packages (Python 3.13 compatible)
 numpy==2.1.1
 pandas==2.2.2
 scikit-learn==1.4.2
-gunicorn==21.2.0
 
-torch --index-url https://download.pytorch.org/whl/cpu
-flask
-numpy
-scikit-learn
-sentence-transformers
-transformers
-torch
+# Torch (correct install URL + latest Py3.12/3.13 wheels)
+torch==2.4.0 --index-url https://download.pytorch.org/whl/cpu
 
+# NLP models
+sentence-transformers==2.6.1
+transformers==4.40.0
