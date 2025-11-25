@@ -1,11 +1,10 @@
 Flask==2.3.3
 Flask-Session==0.4.0
-numpy==1.24.3
-pandas==2.0.3
-scikit-learn==1.3.0
-geopy==2.3.0
-python-dotenv==1.0.0
+numpy==2.1.1
+pandas==2.2.2
+scikit-learn==1.4.2
 gunicorn==21.2.0
+
 torch --index-url https://download.pytorch.org/whl/cpu
 flask
 numpy
@@ -13,3 +12,4 @@ scikit-learn
 sentence-transformers
 transformers
 torch
+
