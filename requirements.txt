@@ -30,7 +30,7 @@ sentence-transformers==2.6.1
 six
 sympy
 threadpoolctl
-tokenizers==0.18.1
+tokenizers==0.15.2
 tqdm
 transformers==4.39.3
 typing_extensions
